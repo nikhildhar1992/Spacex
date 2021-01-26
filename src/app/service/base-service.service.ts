@@ -15,20 +15,17 @@ export class BaseService {
     return throwError(error);
   }
 
-  post(path: string, body: Object = {}): Observable<any> {
-    return this.http.post(
-      `${path}`,
-      body
-    ).pipe(
-      // retry(3),
-      catchError(this.formatErrors)
-    );
-  }
-
   get(path: string, body: Object = {}): Observable<any> {
+    const options = {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }),
+      body: body,
+    };
     return this.http.get(
       `${path}`,
-      body
+      options
     ).pipe(
       catchError(this.formatErrors)
     );
