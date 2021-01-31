@@ -13,10 +13,13 @@ export class DashboardComponent implements OnInit {
   public spaceXData = [];
   public searchYear = "";
   public searchLaunchSuccess = "";
+  public searchLandSuccess = "";
   public yearParam;
   public launchParam;
-  public yearItemClicked;
-  public launchItemClicked;
+  public landParam;
+  public yearItemClicked = '';
+  public launchItemClicked = '';
+  public landItemClicked = '';
   constructor(public dashboardBal: DashboardBusinessLogic,private route: ActivatedRoute) { }
 
   ngOnInit(): void {
@@ -25,43 +28,56 @@ export class DashboardComponent implements OnInit {
     // })
     this.spaceXData = this.dashboardBal.getData();
     this.spaceXDataYears = JSON.parse(JSON.stringify(this.spaceXData));
-    this.paramUpdated()
+    this.paramUpdated();
+    sessionStorage.clear();
   }
 
   paramUpdated() {
     this.route.queryParamMap.subscribe(queryParams => {
-      this.yearParam = queryParams.get("search");
-      this.launchParam = queryParams.get("searchLaunch");
-
-      if(this.launchParam && this.launchParam == 'launch_success_true' || this.launchParam == 'launch_success_false') {
-        let param = this.launchParam.split('_');
-        this.launchItemClicked = param[2].toLocaleLowerCase();
-        if(param[2].toLocaleLowerCase()=='true' || param[2].toLocaleLowerCase()=='false'){
-          if (this.yearParam) {
-            let YParam = this.yearParam.split('_');
-            this.yearItemClicked = Number(YParam[1]);
-            if (YParam.length > 1) {
-              if (YParam[0] == 'launchyear') {
-                this.spaceXData = this.spaceXDataYears.filter(item => {
-                  if((Number(item.launch_year) == Number(YParam[1])) && item.launch_success+"" == param[2]) 
-                    return item;
-                });
-              }
-            }
-          }else{
-            this.spaceXData = this.spaceXDataYears.filter(item => item.launch_success+"" == param[2]);
-          }
+      let allData = JSON.parse(JSON.stringify(this.spaceXDataYears));
+      if(sessionStorage.getItem('searchYear') || sessionStorage.getItem('searchLand') || 
+      sessionStorage.getItem('searchLaunch')){
+        this.yearItemClicked = sessionStorage.getItem('searchYear');
+        this.launchItemClicked = sessionStorage.getItem('searchLaunch');
+        this.landItemClicked = sessionStorage.getItem('searchLand');
+        if(this.yearItemClicked) {
+          allData = allData.filter(item => {
+            return (item.launch_year == this.yearItemClicked)
+          });
+        }if(this.landItemClicked) {
+          allData = allData.filter(item => {
+            return (item.land_success+"" == this.landItemClicked)
+          });
         }
-      }else if(this.yearParam){
-        let param = this.yearParam.split('_');
-        this.yearItemClicked = Number(param[1]);
-        if(param.length > 1) {
-          if(param[0] == 'launchyear') {
-            this.spaceXData = this.spaceXDataYears.filter(item => Number(item.launch_year) == Number(param[1]));
-          }
+        if(this.launchItemClicked) {
+          allData = allData.filter(item => {
+            return (item.launch_success+"" == this.launchItemClicked)
+          });
         }
-      }else {
-        this.spaceXData = JSON.parse(JSON.stringify(this.spaceXDataYears));
+        this.spaceXData = allData;
+      } else {
+        this.yearItemClicked = queryParams.get("searchYear");
+        this.launchItemClicked = queryParams.get("searchLaunch");
+        this.landItemClicked = queryParams.get("searchLand");
+        sessionStorage.setItem('searchLand',this.landItemClicked);
+        sessionStorage.setItem('searchYear',this.yearItemClicked);
+        sessionStorage.setItem('searchLaunch',this.launchItemClicked);
+        if (this.yearItemClicked) {
+          allData = allData.filter(item => {
+            return (item.launch_year == this.yearItemClicked)
+          });
+        }
+        if (this.landItemClicked) {
+          allData = allData.filter(item => {
+            return (item.land_success + "" == this.landItemClicked)
+          });
+        }
+        if (this.launchItemClicked) {
+          allData = allData.filter(item => {
+            return (item.launch_success + "" == this.launchItemClicked)
+          });
+        }
+        this.spaceXData = allData;
       }
     })
   }
@@ -69,38 +85,60 @@ export class DashboardComponent implements OnInit {
   searchItem(searchType,searchItem) {
     if(searchType == 'launch_success_') {
       if(this.launchItemClicked == searchItem){
+        sessionStorage.setItem('searchLaunch',"");
         this.launchItemClicked = "";
-        if(this.yearItemClicked != ""){
-          window.location.replace('#/dashboard?search='+"launchyear_"+this.yearItemClicked);
-        }else{
-          window.location.replace('#/dashboard');
-        }
       }else{
-        this.launchItemClicked = searchItem;
-        if(this.yearItemClicked) {
-          window.location.replace('#/dashboard?searchLaunch='+searchType+searchItem+"&search=launchyear_"+this.yearItemClicked);  
-        }else {
-          window.location.replace('#/dashboard?searchLaunch='+searchType+searchItem);
-        }
+        this.launchItemClicked = searchItem.toLocaleLowerCase();
+        sessionStorage.setItem('searchLaunch',searchItem);
       }
+      this.replaceURL();
       this.paramUpdated();
     }else if(searchType == 'launchyear_') {
       if(this.yearItemClicked == searchItem){
         this.yearItemClicked = "";
-        if(this.launchItemClicked != ""){
-          window.location.replace('#/dashboard?searchLaunch='+"launch_success_"+this.launchItemClicked);
-        }else{
-          window.location.replace('#/dashboard');
-        }
+        sessionStorage.setItem('searchYear',"");
       }else{
         this.yearItemClicked = searchItem;
-        if(this.launchItemClicked){
-          window.location.replace('#/dashboard?search='+searchType+searchItem+"&searchLaunch=launch_success_"+this.launchItemClicked);
-        }else {
-          window.location.replace('#/dashboard?search='+searchType+searchItem);
-        }
+        sessionStorage.setItem('searchYear',searchItem);
       }
+      this.replaceURL();
+      this.paramUpdated();
+    }else if(searchType == 'land_success_') {
+      if(this.landItemClicked == searchItem){
+        this.landItemClicked = "";
+        sessionStorage.setItem('searchLand',"");
+      }else{
+        this.landItemClicked = searchItem.toLocaleLowerCase();
+        sessionStorage.setItem('searchLand',searchItem);
+      }
+      this.replaceURL();
       this.paramUpdated();
     }
+  }
+
+  replaceURL() {
+    let searchString = "";
+    
+    if(this.landItemClicked != "" && this.landItemClicked){
+      searchString = searchString+"?searchLand="+this.landItemClicked;
+    }
+    
+    if (this.yearItemClicked != "" && this.yearItemClicked) {
+      if (searchString != "") {
+        searchString = searchString+"&searchYear="+this.yearItemClicked;
+      }else {
+        searchString = searchString+"?searchYear="+this.yearItemClicked;
+      }
+    }
+    
+    if(this.launchItemClicked != "" && this.launchItemClicked) {
+      if (searchString != "") {
+        searchString = searchString+"&searchLaunch="+this.launchItemClicked;
+      }else {
+        searchString = searchString+"?searchLaunch="+this.launchItemClicked;
+      }
+    }
+
+    window.location.replace('#/dashboard'+searchString);
   }
 }

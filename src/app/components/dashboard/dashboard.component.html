@@ -1,40 +1,56 @@
-<div class="dashboardContent" style="padding: 15px;background: #eaeaea;height: 100%;">
+<div class="dashboardContent flex-container" style="padding: 15px;background: #eaeaea;height: 100%;">
     <div class="space-text"><b>SpaceX Launch Programs</b></div>
-    <div class="filter-panel col-lg-3 col-md-3 col-sm-12" style="min-width: 240px;">
+    <div class="filter-panel">
         <label><b>Filters</b></label>
         <div>
             <div><input class="launchYearInput"  [(ngModel)]="searchYear" type="number" placeholder="Launch Year" style="width: 100%;"/></div>
-            <div style="text-align: center;">
-                <button [ngClass]="yearItemClicked == item.launch_year ? 'active buttonLaunchYear inline col-lg-4 col-md-4 col-sm-4 col-xs-4': 'buttonLaunchYear inline col-lg-4 col-md-4 col-sm-4 col-xs-4'" (click)="searchItem('launchyear_',item.launch_year)" *ngFor="let item of spaceXDataYears | searchFilter:searchYear:'launch_year'">
+            <div>
+                <button [ngClass]="yearItemClicked == item.launch_year ? 'active buttonLaunchYear inline': 'buttonLaunchYear inline'" (click)="searchItem('launchyear_',item.launch_year)" *ngFor="let item of spaceXDataYears | searchFilter:searchYear:'launch_year'">
                     {{item.launch_year}}
                 </button>
             </div>
         </div>
         <div style="margin-top: 30px;">
             <div><input class="launchYearInput"  [(ngModel)]="searchLaunchSuccess" type="text" placeholder="Successful Launch" style="width: 100%;"/></div>
-            <div style="text-align: center;">
-                <button [ngClass]="launchItemClicked == item.toLocaleLowerCase() ? 'active buttonLaunchYear inline col-lg-4 col-md-4 col-sm-4 col-xs-4': 'buttonLaunchYear inline col-lg-4 col-md-4 col-sm-4 col-xs-4'" (click)="searchItem('launch_success_',item.toLocaleLowerCase())" *ngFor="let item of ['True','False'] | searchFilter:searchLaunchSuccess:'launch_success'">
+            <div>
+                <button [ngClass]="launchItemClicked == item.toLocaleLowerCase() ? 'active buttonLaunchYear inline': 'buttonLaunchYear inline'" (click)="searchItem('launch_success_',item.toLocaleLowerCase())" *ngFor="let item of ['True','False'] | searchFilter:searchLaunchSuccess:'launch_success'">
+                    {{item}}
+                </button>
+            </div>
+        </div>
+        <div style="margin-top: 30px;">
+            <div><input class="launchYearInput" [(ngModel)]="searchLandSuccess" type="text" placeholder="Successful Land" style="width: 100%;"/></div>
+            <div>
+                <button [ngClass]="landItemClicked == item.toLocaleLowerCase() ? 'active buttonLaunchYear inline': 'buttonLaunchYear inline'" (click)="searchItem('land_success_',item.toLocaleLowerCase())" *ngFor="let item of ['True','False'] | searchFilter:searchLandSuccess:'land_success'">
                     {{item}}
                 </button>
             </div>
         </div>
     </div>
-    <div style="align-items: flex-start;" class="inline col-lg-9 col-md-9 col-sm-12">
-        <div *ngFor="let item of spaceXData" class="card col-lg-3 col-md-3 col-sm">
+    <div class="inline itemData" *ngIf="spaceXData.length">
+        <div *ngFor="let item of spaceXData" class="card">
             <img src="{{item.links.mission_patch}}">
             <div class="container">
-                <h4><b>{{item.mission_name}} # {{item.flight_number}}</b></h4>
-                <div><b>Mission Ids</b></div>
-                <div>
-                    <ul *ngIf="item.mission_id.length">
-                        <li *ngFor="let id of item.mission_id;let i = index">
-                            <span *ngIf="id">{{id}}</span>
-                        </li>
-                    </ul>
+                <div class="cardData">
+                    <h4><b><span>{{item.mission_name}}</span> # {{item.flight_number}}</b></h4>
+                    <div><b>Mission Ids</b></div>
+                    <div>
+                        <ul *ngIf="item.mission_id.length" style="margin-bottom: 0;">
+                            <li *ngFor="let id of item.mission_id;let i = index">
+                                <span *ngIf="id">{{id}}</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div><b>Launch Year</b>: {{item.launch_year}}</div>
+                    <div><b>Successful Launch</b>: {{item.launch_success}}</div>
+                    <div><b>Successful Land</b>: {{item.land_success}}</div>
                 </div>
-                <div><b>Launch Year</b>: {{item.launch_year}}</div>
-                <div><b>Successful Launch</b>: {{item.launch_success}}</div>
             </div>
+        </div>
+    </div>
+    <div class="inline noRecordFound" *ngIf="!spaceXData.length">
+        <div class="card">
+            No Records Found
         </div>
     </div>
 </div>

@@ -4,7 +4,7 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  { path: "dashboard/:search/:searchLaunch", component: DashboardComponent },
+  { path: "dashboard/:searchYear/:searchLaunch/:searchLand", component: DashboardComponent },
   { path: 'dashboard', component: DashboardComponent}
 ];
 
